@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Agent Studio · Nate Danilovich</title>
-<meta name="description" content="Agent Studio designs an AI agent team for a job you describe: roles, handoffs, checks and every agent's instructions. Run it once with Claude or export it.">
+<meta name="description" content="Agent Studio designs an AI agent team for a job you describe: roles, handoffs, checks and every agent's instructions. Run it live or export it.">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,9 +76,9 @@ select,input[type=text]{border:1px solid var(--line-strong);border-radius:10px;p
 .teamhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .count{font:800 44px/1 var(--display);font-stretch:70%}
 .count small{display:block;font:500 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
-.flow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(132px,1fr);gap:0;overflow-x:auto;margin:16px 0 4px;padding-bottom:6px}
-.stage{position:relative;padding:0 14px 0 0}
-.stage + .stage{padding-left:14px;border-left:1px dashed var(--line-strong)}
+.flow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(92px,1fr);gap:0;overflow-x:auto;margin:16px 0 4px;padding-bottom:6px}
+.stage{position:relative;padding:0 10px 0 0}
+.stage + .stage{padding-left:10px;border-left:1px dashed var(--line-strong)}
 .stage .sn{font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .chip{display:flex;align-items:center;gap:7px;border:1.5px solid var(--ink);border-radius:10px;padding:6px 9px;font-size:13px;font-weight:700;margin-bottom:6px;background:var(--surface);transition:background .2s,color .2s}
 .chip i{width:8px;height:8px;border-radius:50%;background:var(--line-strong);flex:none}
@@ -131,6 +131,10 @@ pre.out{margin:0;max-height:420px;overflow:auto;background:#0d1b33;color:#dbe6f6
 footer{border-top:1px solid var(--line)}
 footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-block:18px;font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@view-transition{navigation:auto}
+@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.intro,.intro + *{animation:fu .6s cubic-bezier(.2,.7,.2,1) both}.intro + *{animation-delay:.1s}
+@media (prefers-reduced-motion:reduce){.intro,.intro + *{animation:none}}
 </style>
 </head>
 <body>
@@ -144,7 +148,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
   <div class="wrap">
     <div class="intro">
       <h1>Describe the job. <em>Get the team.</em></h1>
-      <p>Answer a few questions. Agent Studio picks the roles, wires the handoffs, adds the checks your work needs and writes every agent’s instructions. Run it once with Claude below, or copy it into your own tools.</p>
+      <p>Answer a few questions. Agent Studio picks the roles, wires the handoffs, adds the checks your work needs and writes every agent’s instructions. Run it live below, or copy it into your own tools.</p>
     </div>
 
     <div class="grid">
@@ -237,8 +241,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
 
     <div class="lower">
       <section class="panel" id="run">
-        <h2>Run it with Claude</h2>
-        <p class="sub">Each agent is a separate call to Claude with only its own instructions and the handoffs it receives. You see every message.</p>
+        <h2>Run it live</h2>
+        <p class="sub">Each agent is a separate model call with only its own instructions and the handoffs it receives. You see every message.</p>
         <p class="note" id="r-note" hidden></p>
         <div class="runrow" id="r-tool" hidden>
           <label class="mono" for="r-sym">Market data for</label>
@@ -252,7 +256,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
         <p class="status" id="r-status">Ready.</p>
         <ol class="log" id="r-log"></ol>
         <div class="final" id="r-final" hidden><h3 id="r-ftitle">Final output</h3><div class="tx" id="r-ftext"></div></div>
-        <p class="fine">Live runs use Claude through this site’s server, with a daily limit so a visitor can’t run up costs. Agents only see what they’re handed and are told never to invent numbers or sources.</p>
+        <p class="fine">Live runs go through this site’s server to <span id="run-model">an open model on Groq</span>, with a daily limit so a visitor can’t run up costs. Agents only see what they’re handed and are told never to invent numbers or sources.</p>
       </section>
 
       <section class="panel" id="export">
@@ -273,7 +277,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
     </div>
   </div>
 </main>
-<footer><div class="wrap"><span>Built by Nate Danilovich. Plain JavaScript; live runs through a Netlify function and the Claude API.</span><span><a href="https://github.com/ndanilovich12">GitHub</a></span></div></footer>
+<footer><div class="wrap"><span>Built by Nate Danilovich. Plain JavaScript; live runs through a Netlify function and a hosted model API.</span><span><a href="https://github.com/ndanilovich12">GitHub</a></span></div></footer>
 
 <script src="lab-core.js"></script>
 <script src="tech-data.js"></script>
@@ -459,6 +463,7 @@ function checkLive(){
   if (!HOSTED){ note.textContent = 'Live runs work on the hosted site. This copy can still design and export teams.'; note.hidden = false; $('r-go').disabled = true; return; }
   fetch('/api/agent').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(j){
     LIVE = j && j.live;
+    if (j && j.label && $('run-model')) $('run-model').textContent = j.label;
     if (!LIVE){ note.textContent = 'Live runs are switched off right now. You can still design the team and export everything.'; note.hidden = false; $('r-go').disabled = true; }
   });
 }

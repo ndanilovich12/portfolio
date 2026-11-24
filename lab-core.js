@@ -4,7 +4,7 @@
   'use strict';
   var Lab = {};
 
-  /* ---------- seeded random numbers (so the simulated market is the same on every visit) */
+  /* ---------- seeded random numbers (so every forecast run is repeatable) */
   function mulberry32(a) {
     return function () {
       a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -37,6 +37,7 @@
       if (v == null || !isFinite(v)) return '–';
       var a = Math.abs(v);
       var z = function (x, d) { return x.toFixed(d).replace(/\.0$/, ''); };
+      if (a >= 1e12) return z(v / 1e12, a >= 1e13 ? 1 : 2) + 'T';
       if (a >= 1e9) return z(v / 1e9, a >= 1e10 ? 0 : 1) + 'B';
       if (a >= 1e6) return z(v / 1e6, a >= 1e7 ? 0 : 1) + 'M';
       if (a >= 1e4) return z(v / 1e3, a >= 1e5 ? 0 : 1) + 'K';
@@ -135,50 +136,6 @@
     };
   };
 
-  /* ---------- simulated market: eight made-up Western New York companies */
-  Lab.TICKERS = [
-    { sym: 'QCTY', name: 'Queen City Logistics', sector: 'Industrials', beta: 1.05, alpha: 0.04, vol: 0.20, p0: 48, color: '#2a78d6' },
-    { sym: 'LKFX', name: 'Lakefront Software', sector: 'Technology', beta: 1.55, alpha: 0.10, vol: 0.30, p0: 112, color: '#eb6834' },
-    { sym: 'NGRA', name: 'Niagara Hydro Power', sector: 'Utilities', beta: 0.35, alpha: 0.03, vol: 0.11, p0: 64, color: '#1baf7a' },
-    { sym: 'BSON', name: 'Bison Bancorp', sector: 'Financials', beta: 1.15, alpha: 0.02, vol: 0.18, p0: 37, color: '#eda100' },
-    { sym: 'ELMW', name: 'Elmwood Health', sector: 'Health care', beta: 0.70, alpha: 0.05, vol: 0.19, p0: 86, color: '#e87ba4' },
-    { sym: 'CNLR', name: 'Canalside Retail', sector: 'Consumer', beta: 1.20, alpha: -0.06, vol: 0.26, p0: 23, color: '#008300' },
-    { sym: 'SNWB', name: 'Snowbelt Outfitters', sector: 'Consumer', beta: 0.95, alpha: 0.07, vol: 0.24, p0: 55, color: '#6250d6' },
-    { sym: 'WNGS', name: 'Wingstreet Foods', sector: 'Consumer staples', beta: 0.55, alpha: 0.04, vol: 0.14, p0: 71, color: '#e34948' }
-  ];
-  Lab.INDEX = { sym: 'WNY8', name: 'WNY 8 Index (equal weight)', color: '#0a1e3f' };
-
-  Lab.genMarket = function (today) {
-    var end = today || new Date();
-    var d = new Date(Date.UTC(2024, 10, 1)), endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-    var dates = [];
-    while (d.getTime() <= endUTC) {
-      var wd = d.getUTCDay();
-      if (wd !== 0 && wd !== 6) dates.push(new Date(d.getTime()));
-      d.setUTCDate(d.getUTCDate() + 1);
-    }
-    var n = dates.length, i, rm = mulberry32(hash('market-factor')), rc = mulberry32(hash('consumer-factor'));
-    var mkt = [], con = [];
-    for (i = 0; i < n; i++) { mkt.push(0.08 / 252 + 0.17 / Math.sqrt(252) * gauss(rm)); con.push(0.16 / Math.sqrt(252) * gauss(rc)); }
-    var series = {};
-    Lab.TICKERS.forEach(function (t) {
-      var r = mulberry32(hash(t.sym)), p = t.p0, close = [], volume = [], base = 0.6e6 + r() * 2.4e6;
-      for (i = 0; i < n; i++) {
-        var ret = i === 0 ? 0 : t.alpha / 252 + t.beta * mkt[i] + (t.sector.indexOf('Consumer') === 0 ? con[i] : 0) + 0.8 * t.vol / Math.sqrt(252) * gauss(r);
-        p = p * (1 + ret); close.push(p);
-        volume.push(Math.round(base * (0.7 + 0.6 * r()) * (1 + 14 * Math.abs(ret))));
-      }
-      series[t.sym] = { sym: t.sym, name: t.name, sector: t.sector, color: t.color, close: close, volume: volume, ppy: 252, unit: '$' };
-    });
-    var idx = [];
-    for (i = 0; i < n; i++) {
-      var s = 0; Lab.TICKERS.forEach(function (t) { s += series[t.sym].close[i] / series[t.sym].close[0]; });
-      idx.push(100 * s / Lab.TICKERS.length);
-    }
-    series[Lab.INDEX.sym] = { sym: Lab.INDEX.sym, name: Lab.INDEX.name, sector: 'Index', color: Lab.INDEX.color, close: idx, volume: null, ppy: 252, unit: '' };
-    return { dates: dates, series: series, order: Lab.TICKERS.map(function (t) { return t.sym; }), index: Lab.INDEX.sym, simulated: true };
-  };
-
   /* ---------- real market snapshot (tech-data.js): seven big tech names and the Nasdaq-100 ETF */
   Lab.realMarket = function () {
     var R = window.LAB_REAL; if (!R || !R.c) return null;
@@ -193,44 +150,14 @@
     return { dates: dates, series: series, order: order, index: R.index, simulated: false, real: true, asOf: dates[n - 1], source: R.source };
   };
 
-  /* ---------- sample business data: a made-up coffee roaster's orders */
-  Lab.sampleBusiness = function (today) {
-    var end = today || new Date(), r = mulberry32(hash('coffee-roaster'));
-    var endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-    var d = new Date(Date.UTC(end.getFullYear() - 1, end.getMonth() - 2, 1));
-    var cats = [
-      { name: 'Whole bean', price: 19, cost: 0.46, w: 30, growth: 0.10 },
-      { name: 'Subscriptions', price: 34, cost: 0.41, w: 9, growth: 1.10 },
-      { name: 'Cold brew', price: 14, cost: 0.38, w: 14, growth: 0.15, summer: 1 },
-      { name: 'Cafe drinks', price: 6.5, cost: 0.31, w: 34, growth: 0.05 },
-      { name: 'Wholesale', price: 240, cost: 0.66, w: 2.2, growth: 0.30 },
-      { name: 'Merch', price: 27, cost: 0.55, w: 5, growth: -0.10, holiday: 1 }
-    ];
-    var wdw = [0.9, 0.62, 0.7, 0.74, 0.86, 1.22, 1.5]; /* Sun..Sat */
-    var rows = [], start = d.getTime(), span = endUTC - start;
-    while (d.getTime() <= endUTC) {
-      var prog = (d.getTime() - start) / span, m = d.getUTCMonth(), wd = d.getUTCDay();
-      var season = 1 + (m === 10 ? 0.12 : m === 11 ? 0.34 : m === 0 ? -0.14 : m === 1 ? -0.08 : 0);
-      cats.forEach(function (c) {
-        var lam = c.w / 7.2 * wdw[wd] * season * (1 + c.growth * prog);
-        if (c.summer) lam *= (m >= 5 && m <= 8) ? 1.9 : 0.55;
-        if (c.holiday) lam *= (m === 10 || m === 11) ? 2.4 : 0.8;
-        if (c.name === 'Wholesale') lam *= (wd === 0 || wd === 6) ? 0.1 : 1.3;
-        var k = Math.floor(lam + (r() < (lam % 1) ? 1 : 0));
-        if (r() < 0.25) k += r() < 0.5 ? 1 : -1;
-        for (var j = 0; j < Math.max(0, k); j++) {
-          var units = c.name === 'Wholesale' ? 1 : 1 + Math.floor(r() * r() * 4);
-          var rev = Math.round(units * c.price * (0.85 + 0.3 * r()) * 100) / 100;
-          var channel = c.name === 'Wholesale' ? 'Wholesale' : c.name === 'Cafe drinks' ? 'In store' : c.name === 'Subscriptions' ? 'Online' : (r() < 0.42 + 0.15 * prog ? 'Online' : 'In store');
-          rows.push([
-            d.toISOString().slice(0, 10), c.name, channel, r() < 0.3 - 0.08 * prog ? 'New' : 'Returning',
-            String(units), rev.toFixed(2), (rev * c.cost * (0.94 + 0.12 * r())).toFixed(2)
-          ]);
-        }
-      });
-      d.setUTCDate(d.getUTCDate() + 1);
-    }
-    return { header: ['date', 'category', 'channel', 'customer', 'units', 'revenue', 'cost'], rows: rows, name: 'Sample: a made-up coffee roaster', sample: true };
+  /* ---------- sample business data: real U.S. retail sales (retail-data.js) */
+  Lab.sampleBusiness = function () {
+    var R = window.LAB_RETAIL; if (!R) return { header: ['month', 'category', 'sales'], rows: [], name: 'No sample loaded', sample: true };
+    var rows = [];
+    R.months.forEach(function (m, i) {
+      R.cats.forEach(function (c, k) { rows.push([m, c, String(R.v[k][i] * 1e6)]); });
+    });
+    return { header: ['month', 'category', 'sales'], rows: rows, name: R.name, source: R.source, sample: true, real: true };
   };
 
   /* ---------- CSV parsing and column typing */
@@ -308,8 +235,9 @@
   };
 
   /* ---------- business analysis: every figure here is a plain formula, shown next to the insight */
+  function bigNum(a) { return a >= 1e12 ? (a / 1e12).toFixed(2) + 'T' : a >= 1e9 ? (a / 1e9).toFixed(1) + 'B' : (a / 1e6).toFixed(1) + 'M'; }
   Lab.analyze = function (data, map, cols) {
-    var isMoney = cols[map.measure] && cols[map.measure].money, f = function (v) { return isMoney ? fmt.money(v) : fmt.num(v, Math.abs(v) < 100 && v % 1 ? 1 : 0); };
+    var isMoney = cols[map.measure] && cols[map.measure].money, f = function (v) { return isMoney ? (Math.abs(v) >= 1e8 ? '$' + (v < 0 ? '-' : '') + bigNum(Math.abs(v)) : fmt.money(v)) : fmt.num(v, Math.abs(v) < 100 && v % 1 ? 1 : 0); };
     var mName = cols[map.measure] ? cols[map.measure].name : 'value';
     var total = 0, costTotal = 0, n = 0, months = {}, groups = {}, days = {}, minD = null, maxD = null, skipped = 0;
     data.rows.forEach(function (r) {
@@ -344,7 +272,9 @@
       var M = months[k] || { key: k, total: 0, n: 0 };
       M.label = fmt.monthLabel(Math.floor(k / 12), k % 12); M.partial = false; ml.push(M);
     }
-    if (ml.length) {
+    var monthly = Object.keys(days).length <= keys.length;
+    out.monthly = monthly;
+    if (ml.length && !monthly) {
       var lastDay = new Date(Date.UTC(maxD.getUTCFullYear(), maxD.getUTCMonth() + 1, 0)).getUTCDate();
       if (maxD.getUTCDate() < lastDay) ml[ml.length - 1].partial = true;
       if (minD.getUTCDate() > 1 && ml.length > 1) ml[0].partial = true;
@@ -366,7 +296,7 @@
 
     /* weekday pattern: average per calendar day */
     var dk = Object.keys(days);
-    if (dk.length >= 14) {
+    if (dk.length >= 14 && !monthly) {
       var sums = [0, 0, 0, 0, 0, 0, 0], cnt = [0, 0, 0, 0, 0, 0, 0];
       dk.forEach(function (t) { var w = new Date(+t).getUTCDay(); sums[w] += days[t]; cnt[w]++; });
       out.weekday = [1, 2, 3, 4, 5, 6, 0].map(function (w) { return { label: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][w], value: cnt[w] ? sums[w] / cnt[w] : 0 }; });

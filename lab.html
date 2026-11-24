@@ -268,6 +268,10 @@ table.mv td{padding:8px 10px 8px 0;border-top:1px solid var(--line);white-space:
 .wi-b span{font-size:13px;font-weight:650;text-align:right;font-variant-numeric:tabular-nums}
 footer{border-top:1px solid var(--line);padding-block:22px 34px;color:var(--muted);font-size:13px}
 footer .wrap{display:flex;gap:10px 24px;flex-wrap:wrap;justify-content:space-between}
+@view-transition{navigation:auto}
+@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.intro,.intro + *{animation:fu .6s cubic-bezier(.2,.7,.2,1) both}.intro + *{animation-delay:.1s}
+@media (prefers-reduced-motion:reduce){.intro,.intro + *{animation:none}}
 </style>
 </head>
 <body>
@@ -417,13 +421,13 @@ footer .wrap{display:flex;gap:10px 24px;flex-wrap:wrap;justify-content:space-bet
   <div class="wrap">
     <div class="intro">
       <h1>Drop in a CSV. <em>Get the story.</em></h1>
-      <p>Upload a sales or orders export and Bull Run finds the date, the money and the categories, then charts the trend and writes the takeaways. Each takeaway shows its math. Your file never leaves your browser.</p>
+      <p>It opens on real U.S. retail sales from the Census Bureau, ten store types by month. Upload your own sales or orders export and Bull Run finds the date, the money and the categories, then charts the trend and writes the takeaways. Each takeaway shows its math. Your file never leaves your browser.</p>
     </div>
     <div class="drop" id="b-drop" style="margin-top:22px">
       <div class="t"><b id="b-name"></b><span id="b-meta"></span></div>
       <input type="file" id="b-file" accept=".csv,.tsv,.txt,text/csv" hidden>
       <button class="btn" id="b-pick">Upload a CSV</button>
-      <button class="btn ghost" id="b-reset" hidden>Back to sample data</button>
+      <button class="btn ghost" id="b-reset" hidden>Back to U.S. retail data</button>
     </div>
     <p class="notice err" id="b-err" hidden></p>
     <div class="maprow">
@@ -459,6 +463,7 @@ footer .wrap{display:flex;gap:10px 24px;flex-wrap:wrap;justify-content:space-bet
 <footer><div class="wrap"><span>Built by Nate Danilovich. Plain JavaScript, no chart libraries.</span><span>Statistics and simulations only. Nothing here is investment advice.</span></div></footer>
 
 <script src="tech-data.js"></script>
+<script src="retail-data.js"></script>
 <script src="lab-core.js"></script>
 <script>
 (function(){
@@ -1271,7 +1276,7 @@ function renderBiz(){
   var err = $('b-err'); err.hidden = true;
   if (B.map.measure < 0){ err.textContent = 'This file has no number column to measure. Add a column such as revenue or amount and upload it again.'; err.hidden = false; return; }
   var A = L.analyze(B.data, B.map, B.cols), f = A.f, fc = function(v){ return A.isMoney ? F.money(v, true) : F.compact(v); };
-  $('b-meta').textContent = F.num(B.data.rows.length) + ' rows · ' + B.data.header.length + ' columns' + (A.minD ? ' · ' + F.date(A.minD) + ' to ' + F.date(A.maxD) : '') + (B.data.sample ? ' · every number here is invented' : ' · read in your browser, not uploaded');
+  $('b-meta').textContent = F.num(B.data.rows.length) + ' rows · ' + B.data.header.length + ' columns' + (A.minD ? ' · ' + (A.monthly ? A.months[0].label + ' to ' + A.months[A.months.length-1].label + ', monthly' : F.date(A.minD) + ' to ' + F.date(A.maxD)) : '') + (B.data.sample ? ' · ' + (B.data.source || '') : ' · read in your browser, not uploaded');
   var full = A.fullMonths, k = [{ l: 'Total ' + A.measureName, v: fc(A.total), s: f(A.total) }, { l: 'Rows', v: F.num(A.n), s: A.skipped ? F.num(A.skipped) + ' skipped (no number)' : 'each row counted once' }, { l: 'Average per row', v: f(A.avg) }];
   if (A.margin != null) k.push({ l: 'Gross margin', v: F.pct(A.margin), s: 'after the cost column' });
   if (full.length >= 2){ var a = full[full.length-1], b = full[full.length-2], ch = b.total ? a.total / b.total - 1 : NaN; k.push({ l: a.label + ' vs ' + b.label, v: F.pct(ch, 1, true), cls: ch >= 0 ? 'up' : 'down', s: f(a.total) + ' vs ' + f(b.total) }); }

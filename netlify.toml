@@ -1,0 +1,32 @@
+# Netlify settings for the portfolio site.
+# Publish the repo root as-is (no build step). Functions live in netlify/functions.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Yahoo Finance daily prices for Bull Run (same proxy the live site already uses)
+[[redirects]]
+  from = "/api/quotes/*"
+  to = "https://query1.finance.yahoo.com/v8/finance/chart/:splat"
+  status = 200
+  force = true
+
+# The old Relay demo now lives inside Agent Studio
+[[redirects]]
+  from = "/relay"
+  to = "/agents"
+  status = 301
+
+[[redirects]]
+  from = "/relay.html"
+  to = "/agents"
+  status = 301
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

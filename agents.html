@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Studio · Nate Danilovich</title>
+<meta name="description" content="Agent Studio designs an AI agent team for a job you describe: roles, handoffs, checks and every agent's instructions. Run it once with Claude or export it.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: the brief on the left, the team it produces on the right; the live run and exports below. */
+:root{
+  --paper:#f2f5f9; --surface:#ffffff; --ink:#0a1e3f; --navy-2:#14305e; --blue:#2a6fdb; --sky:#bbd9f4; --sky-soft:#dcebf9;
+  --muted:#5d6878; --line:#d3dbe6; --line-strong:#aeb9c8; --red:#c21f38; --red-soft:#fbe6e9; --ok:#0b7a53; --ok-soft:#dff3ea; --warn:#a85a00; --warn-soft:#fdf0d9;
+  --display:"Archivo","Arial Narrow",Impact,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; --serif:"Instrument Serif",Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15.5px/1.5 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font:500 11.5px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+.bar{background:var(--ink);color:#fff}
+.bar .wrap{display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;padding-block:14px}
+.back{font:500 13px var(--body);text-decoration:none;color:#fff;opacity:.8;white-space:nowrap}
+.back:hover{opacity:1;text-decoration:underline}
+.brand{font:800 22px/1 var(--display);font-stretch:75%;text-transform:uppercase;letter-spacing:.01em;margin-right:auto}
+.brand em{font:italic 400 22px var(--serif);text-transform:none;color:var(--sky);margin-left:6px}
+
+.intro{padding-block:30px 6px}
+.intro h1{font:800 clamp(34px,5.6vw,62px)/.95 var(--display);font-stretch:68%;text-transform:uppercase;margin:0 0 12px;text-wrap:balance}
+.intro h1 em{font:italic 400 1em var(--serif);text-transform:none;color:var(--blue)}
+.intro p{max-width:70ch;margin:0;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;padding-block:22px 28px;align-items:start}
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.panel h2{font:700 16px var(--body);margin:0 0 2px}
+.panel .sub{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+
+/* ---------- the brief (form) ---------- */
+.q{border:0;margin:0;padding:16px 0;border-top:1px solid var(--line);min-width:0}
+.q:first-of-type{border-top:0;padding-top:4px}
+.q legend,.q > label{display:block;font:700 14px var(--body);margin:0 0 8px;padding:0}
+.q legend small,.q > label small{font-weight:400;color:var(--muted)}
+.q legend{float:left;width:100%}
+.q legend + *{clear:both}
+textarea{width:100%;min-height:86px;resize:vertical;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;background:var(--surface);line-height:1.45}
+textarea:focus,select:focus,input[type=text]:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px var(--sky-soft)}
+.ex{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ex button{border:1px dashed var(--line-strong);background:none;border-radius:999px;padding:4px 10px;font-size:12.5px;cursor:pointer;color:var(--navy-2)}
+.ex button:hover{background:var(--sky-soft);border-style:solid}
+.opts{display:flex;flex-wrap:wrap;gap:7px}
+.opts label{position:relative;cursor:pointer}
+.opts input{position:absolute;opacity:0;width:1px;height:1px}
+.opts span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600;transition:background .15s,border-color .15s,color .15s}
+.opts input:checked + span{background:var(--ink);border-color:var(--ink);color:#fff}
+.opts input:focus-visible + span{outline:2px solid var(--blue);outline-offset:2px}
+.opts.stack{flex-direction:column}
+.opts.stack span{border-radius:10px;width:100%;font-weight:500;padding:9px 12px;display:block}
+.opts.stack span b{display:block;font-weight:700}
+.opts.stack input:checked + span{background:var(--sky-soft);color:var(--ink);border-color:var(--ink)}
+select,input[type=text]{border:1px solid var(--line-strong);border-radius:10px;padding:8px 10px;background:var(--surface)}
+
+/* ---------- the team ---------- */
+.side{position:sticky;top:16px}
+@media (max-width:1000px){.side{position:static}}
+.teamhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.count{font:800 44px/1 var(--display);font-stretch:70%}
+.count small{display:block;font:500 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.flow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(132px,1fr);gap:0;overflow-x:auto;margin:16px 0 4px;padding-bottom:6px}
+.stage{position:relative;padding:0 14px 0 0}
+.stage + .stage{padding-left:14px;border-left:1px dashed var(--line-strong)}
+.stage .sn{font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.chip{display:flex;align-items:center;gap:7px;border:1.5px solid var(--ink);border-radius:10px;padding:6px 9px;font-size:13px;font-weight:700;margin-bottom:6px;background:var(--surface);transition:background .2s,color .2s}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--line-strong);flex:none}
+.chip.human{border-style:dashed;border-color:var(--warn);color:var(--warn);font-weight:600}
+.chip.working{background:var(--sky-soft)}.chip.working i{background:var(--blue);animation:pulse 1s infinite}
+.chip.done i{background:var(--ok)}.chip.sent-back i{background:var(--red)}
+@keyframes pulse{50%{opacity:.3}}
+.agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:14px}
+.agent{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:var(--paper);min-width:0}
+.agent h3{font:800 18px/1.1 var(--display);font-stretch:80%;text-transform:uppercase;margin:0 0 4px;display:flex;align-items:center;gap:7px}
+.agent h3 i{width:9px;height:9px;border-radius:50%;background:var(--line-strong);flex:none}
+.agent.working h3 i{background:var(--blue);animation:pulse 1s infinite}.agent.done h3 i{background:var(--ok)}
+.agent p{margin:0 0 8px;font-size:13.5px;line-height:1.4}
+.agent dl{margin:0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 8px}
+.agent dt{color:var(--muted)}.agent dd{margin:0;overflow-wrap:anywhere}
+.why{margin:14px 0 0;padding:12px 14px;border-radius:10px;background:var(--sky-soft);font-size:13.5px}
+.why ul{margin:6px 0 0;padding-left:18px}
+.why li{margin:2px 0}
+
+/* ---------- run + export ---------- */
+.lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:28px;padding-block:0 40px;align-items:start}
+@media (max-width:1000px){.lower{grid-template-columns:minmax(0,1fr)}}
+.runrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.runrow input[type=text]{flex:1 1 260px;min-width:0}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;font-weight:650;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn.ghost{background:none;color:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn:hover{background:var(--navy-2)}.btn.ghost:hover{background:var(--sky-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.status{font-size:13px;color:var(--muted)}
+.note{padding:10px 12px;border-left:3px solid var(--warn);background:var(--warn-soft);border-radius:0 8px 8px 0;font-size:13.5px;margin:0 0 12px}
+.note.err{border-color:var(--red);background:var(--red-soft)}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.msg{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--paper)}
+.msg .hd{display:flex;justify-content:space-between;gap:8px;font:600 11px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.msg .hd b{color:var(--ink)}
+.msg .tx{white-space:pre-wrap;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.msg.tool{background:#f6f9fd;border-style:dashed}
+.msg.verdict-ok{border-color:var(--ok);background:var(--ok-soft)}
+.msg.verdict-no{border-color:var(--red);background:var(--red-soft)}
+.final{margin-top:14px;border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.final h3{font:700 14px var(--body);margin:0 0 6px}
+.final .tx{white-space:pre-wrap;font-size:14.5px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{border:1.5px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:650;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+pre.out{margin:0;max-height:420px;overflow:auto;background:#0d1b33;color:#dbe6f6;border-radius:10px;padding:14px;font:500 12px/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.exrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.fine{font-size:12.5px;color:var(--muted);margin:12px 0 0}
+footer{border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-block:18px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="wrap">
+  <a class="back" href="/">← Nate Danilovich</a>
+  <div class="brand">Agent Studio <em>build an AI team</em></div>
+  <a class="back" href="/lab">Bull Run →</a>
+</div></div>
+
+<main>
+  <div class="wrap">
+    <div class="intro">
+      <h1>Describe the job. <em>Get the team.</em></h1>
+      <p>Answer a few questions. Agent Studio picks the roles, wires the handoffs, adds the checks your work needs and writes every agent’s instructions. Run it once with Claude below, or copy it into your own tools.</p>
+    </div>
+
+    <div class="grid">
+      <form class="panel" id="brief" autocomplete="off" novalidate>
+        <h2>The brief</h2>
+        <p class="sub">The team on the right updates as you answer.</p>
+
+        <fieldset class="q">
+          <label for="goal">What should the team get done?</label>
+          <textarea id="goal" maxlength="400" placeholder="e.g. Every Monday, write me a one-page brief on the three stocks I own: what moved, why, and what to watch."></textarea>
+          <div class="ex" id="examples" aria-label="Examples"></div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>What kind of work is it?</legend>
+          <div class="opts" id="kind">
+            <label><input type="radio" name="kind" value="research" checked><span>Research &amp; analysis</span></label>
+            <label><input type="radio" name="kind" value="sales"><span>Sales &amp; leads</span></label>
+            <label><input type="radio" name="kind" value="support"><span>Customer support</span></label>
+            <label><input type="radio" name="kind" value="content"><span>Marketing &amp; content</span></label>
+            <label><input type="radio" name="kind" value="ops"><span>Operations &amp; admin</span></label>
+            <label><input type="radio" name="kind" value="jobs"><span>Job search</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>What can it use? <small>(pick any)</small></legend>
+          <div class="opts" id="inputs">
+            <label><input type="checkbox" name="inputs" value="web" checked><span>The web</span></label>
+            <label><input type="checkbox" name="inputs" value="docs"><span>Documents &amp; PDFs</span></label>
+            <label><input type="checkbox" name="inputs" value="sheets"><span>Spreadsheets</span></label>
+            <label><input type="checkbox" name="inputs" value="market"><span>Market data</span></label>
+            <label><input type="checkbox" name="inputs" value="email"><span>Email inbox</span></label>
+            <label><input type="checkbox" name="inputs" value="crm"><span>CRM records</span></label>
+            <label><input type="checkbox" name="inputs" value="calendar"><span>Calendar</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>What should it hand back?</legend>
+          <div class="opts" id="output">
+            <label><input type="radio" name="output" value="brief" checked><span>A written brief</span></label>
+            <label><input type="radio" name="output" value="recommendation"><span>A recommendation</span></label>
+            <label><input type="radio" name="output" value="emails"><span>Draft emails</span></label>
+            <label><input type="radio" name="output" value="posts"><span>Social posts</span></label>
+            <label><input type="radio" name="output" value="records"><span>Updated records</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>How much freedom does it get?</legend>
+          <div class="opts stack" id="autonomy">
+            <label><input type="radio" name="autonomy" value="draft"><span><b>Drafts only</b>It prepares everything. You send or apply it yourself.</span></label>
+            <label><input type="radio" name="autonomy" value="approve" checked><span><b>You approve first</b>Nothing goes out until you say yes.</span></label>
+            <label><input type="radio" name="autonomy" value="auto"><span><b>Runs on its own</b>It acts without asking and logs every action.</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>What must it check before it’s done? <small>(pick any)</small></legend>
+          <div class="opts" id="checks">
+            <label><input type="checkbox" name="checks" value="numbers" checked><span>Every number has a source</span></label>
+            <label><input type="checkbox" name="checks" value="tone"><span>Tone fits my brand</span></label>
+            <label><input type="checkbox" name="checks" value="legal"><span>Legal / compliance</span></label>
+            <label><input type="checkbox" name="checks" value="privacy"><span>No private data leaks</span></label>
+            <label><input type="checkbox" name="checks" value="budget"><span>Stays under a cost limit</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="q">
+          <legend>How big a team?</legend>
+          <div class="opts" id="size">
+            <label><input type="radio" name="size" value="4"><span>Lean · up to 4</span></label>
+            <label><input type="radio" name="size" value="6" checked><span>Standard · up to 6</span></label>
+            <label><input type="radio" name="size" value="8"><span>Thorough · up to 8</span></label>
+          </div>
+        </fieldset>
+      </form>
+
+      <section class="panel side" aria-live="polite">
+        <div class="teamhead">
+          <div><h2>Your team</h2><p class="sub" id="t-sub"></p></div>
+          <div class="count" id="t-count"></div>
+        </div>
+        <div class="flow" id="flow" aria-label="Order of work"></div>
+        <div class="agents" id="agents"></div>
+        <div class="why" id="why"></div>
+      </section>
+    </div>
+
+    <div class="lower">
+      <section class="panel" id="run">
+        <h2>Run it with Claude</h2>
+        <p class="sub">Each agent is a separate call to Claude with only its own instructions and the handoffs it receives. You see every message.</p>
+        <p class="note" id="r-note" hidden></p>
+        <div class="runrow" id="r-tool" hidden>
+          <label class="mono" for="r-sym">Market data for</label>
+          <select id="r-sym"></select>
+          <span class="status">Real daily prices from Bull Run, computed here and handed to the team as a tool result.</span>
+        </div>
+        <div class="runrow">
+          <input type="text" id="r-task" maxlength="300" placeholder="The task for this run (defaults to your goal)">
+          <button class="btn" type="button" id="r-go">Run the team</button>
+        </div>
+        <p class="status" id="r-status">Ready.</p>
+        <ol class="log" id="r-log"></ol>
+        <div class="final" id="r-final" hidden><h3 id="r-ftitle">Final output</h3><div class="tx" id="r-ftext"></div></div>
+        <p class="fine">Live runs use Claude through this site’s server, with a daily limit so a visitor can’t run up costs. Agents only see what they’re handed and are told never to invent numbers or sources.</p>
+      </section>
+
+      <section class="panel" id="export">
+        <h2>Take it with you</h2>
+        <p class="sub">Everything the team needs, ready to paste into Claude, ChatGPT or an agent framework.</p>
+        <div class="tabs" role="tablist" id="x-tabs">
+          <button role="tab" aria-selected="true" data-v="prompts">Agent instructions</button>
+          <button role="tab" aria-selected="false" data-v="single">One-chat version</button>
+          <button role="tab" aria-selected="false" data-v="json">JSON config</button>
+        </div>
+        <pre class="out" id="x-out" tabindex="0"></pre>
+        <div class="exrow">
+          <button class="btn sm" type="button" id="x-copy">Copy</button>
+          <button class="btn ghost sm" type="button" id="x-dl">Download</button>
+          <span class="status" id="x-msg" aria-live="polite"></span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><span>Built by Nate Danilovich. Plain JavaScript; live runs through a Netlify function and the Claude API.</span><span><a href="https://github.com/ndanilovich12">GitHub</a></span></div></footer>
+
+<script src="lab-core.js"></script>
+<script src="tech-data.js"></script>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+var HOSTED = /^https?:$/.test(location.protocol);
+
+/* ---------- examples fill the whole brief, so people can see a realistic team in one click */
+var EXAMPLES = [
+  { label: 'Weekly stock brief', goal: 'Every Monday, write a one-page brief on AAPL, NVDA and MSFT: what moved last week, why, and what to watch this week.', kind: 'research', inputs: ['web','market'], output: 'brief', autonomy: 'draft', checks: ['numbers'], size: '6' },
+  { label: 'Follow up on new leads', goal: 'Each morning, go through new website leads, rank who to call first and draft a personal follow-up email for each.', kind: 'sales', inputs: ['email','crm','web'], output: 'emails', autonomy: 'approve', checks: ['tone','privacy'], size: '6' },
+  { label: 'Answer customer emails', goal: 'Answer customer questions that come into the support inbox using our help docs, and send anything about refunds to a person.', kind: 'support', inputs: ['email','docs'], output: 'emails', autonomy: 'approve', checks: ['tone','privacy','legal'], size: '6' },
+  { label: 'Tailor job applications', goal: 'For each internship posting I save, score the fit against my resume and draft a short cover letter that sounds like me.', kind: 'jobs', inputs: ['docs','web'], output: 'emails', autonomy: 'draft', checks: ['numbers','tone'], size: '4' },
+  { label: 'Clean up the CRM', goal: 'Every Friday, find duplicate and stale contacts in the CRM, merge or archive them and log every change.', kind: 'ops', inputs: ['crm','sheets'], output: 'records', autonomy: 'auto', checks: ['privacy','budget'], size: '4' }
+];
+EXAMPLES.forEach(function(x){ var b = el('button', null, x.label); b.type = 'button'; b.addEventListener('click', function(){ fill(x); }); $('examples').appendChild(b); });
+function fill(x){
+  $('goal').value = x.goal;
+  setRadio('kind', x.kind); setChecks('inputs', x.inputs); setRadio('output', x.output); setRadio('autonomy', x.autonomy); setChecks('checks', x.checks); setRadio('size', x.size);
+  $('r-task').value = ''; build();
+}
+function setRadio(name, v){ document.querySelectorAll('input[name="' + name + '"]').forEach(function(i){ i.checked = i.value === v; }); }
+function setChecks(name, vs){ document.querySelectorAll('input[name="' + name + '"]').forEach(function(i){ i.checked = vs.indexOf(i.value) >= 0; }); }
+function radio(name){ var i = document.querySelector('input[name="' + name + '"]:checked'); return i ? i.value : ''; }
+function checks(name){ return [].slice.call(document.querySelectorAll('input[name="' + name + '"]:checked')).map(function(i){ return i.value; }); }
+
+/* ---------- the role library. Each role says when it joins and why, so the team is explainable. */
+var TOOL = { web: 'Web search', docs: 'Document reader', sheets: 'Spreadsheet reader', market: 'Market data (prices)', email: 'Email (read)', crm: 'CRM (read/write)', calendar: 'Calendar' };
+var OUT_NAME = { brief: 'a one-page written brief', recommendation: 'a recommendation with reasons', emails: 'draft emails, one per recipient', posts: 'ready-to-post social posts', records: 'a log of every record changed' };
+var CHECK_RULE = {
+  numbers: 'Every number in the output appears in a specialist’s handoff, with its source.',
+  tone: 'The writing matches the owner’s voice: plain, specific, no hype.',
+  legal: 'No promises, guarantees, advice or claims that need a disclaimer.',
+  privacy: 'No personal data (emails, phone numbers, addresses, account numbers) leaves the team unless the task needs it.',
+  budget: 'The run stays under its tool-call and model-spend limit.'
+};
+function roles(b){
+  var has = function(x){ return b.inputs.indexOf(x) >= 0; }, chk = function(x){ return b.checks.indexOf(x) >= 0; }, R = [];
+  R.push({ id: 'lead', name: 'Lead', stage: 0, p: 100, always: true, job: 'Turns the goal into tasks, gives each one to a single owner, and merges the results into the final package.', tools: [], output: 'a numbered task list (task → owner → expected output), then the final package', rules: ['Give each specialist one task with a clear output.', 'Never do a specialist’s work yourself.', b.autonomy === 'auto' ? 'Log every action the team takes, with time and owner.' : 'Stop before anything is sent or changed; the owner approves.'], why: 'Every team needs one owner who splits the work and ships the result.' });
+  if (b.kind === 'research' || has('market') || has('sheets')) R.push({ id: 'analyst', name: 'Data Analyst', stage: 1, p: 88, job: 'Pulls the numbers from ' + [has('market') ? 'market data' : '', has('sheets') ? 'the spreadsheets' : ''].filter(Boolean).join(' and ') + (has('market') || has('sheets') ? '' : 'the data provided') + ' and returns named values.', tools: ['market','sheets'].filter(has).map(function(t){ return TOOL[t]; }).concat(['Calculator']), output: 'a list of named values: metric = value (source, date)', rules: ['Show the formula or source for every number.', 'Return values, not paragraphs.'], why: has('market') ? 'You gave it market data, so one agent owns the numbers.' : has('sheets') ? 'You gave it spreadsheets, so one agent owns the numbers.' : 'Research work needs one agent who owns the numbers.' });
+  if (has('web') || has('docs')) R.push({ id: 'research', name: 'Researcher', stage: 1, p: 80, job: 'Finds what matters in ' + [has('web') ? 'the web' : '', has('docs') ? 'your documents' : ''].filter(Boolean).join(' and ') + ' and returns facts with links or page numbers.', tools: ['web','docs'].filter(has).map(function(t){ return TOOL[t]; }), output: '5–10 facts, each with its source', rules: ['Quote figures exactly as the source gives them.', 'Flag anything more than a year old.'], why: 'It can use ' + [has('web') ? 'the web' : '', has('docs') ? 'documents' : ''].filter(Boolean).join(' and ') + ', so one agent does the reading.' });
+  if (has('email')) R.push({ id: 'triage', name: 'Inbox Triage', stage: 1, p: 86, job: 'Sorts new email into urgent, needs a reply, FYI and ignore, and pulls out who, what they want and by when.', tools: [TOOL.email], output: 'a table: sender, category, the ask, deadline', rules: ['Read only. Never send or delete.', 'Quote the ask in the sender’s own words.'], why: 'It reads an inbox, so one agent sorts it before anyone writes.' });
+  if (has('crm')) R.push({ id: 'crm', name: 'Records Clerk', stage: 1, p: b.kind === 'ops' ? 90 : 62, job: 'Looks up and updates CRM records, and logs each change with before and after values.', tools: [TOOL.crm], output: 'records touched, with before → after', rules: ['Change only the fields the task names.', b.autonomy === 'auto' ? 'Log every change.' : 'Propose changes; apply them only after approval.'], why: 'It touches CRM records, so one agent owns every change.' });
+  if (has('calendar')) R.push({ id: 'cal', name: 'Scheduler', stage: 1, p: 50, job: 'Finds open times and proposes meetings that fit everyone’s calendar.', tools: [TOOL.calendar], output: 'three proposed times', rules: ['Never book without approval.'], why: 'It can see a calendar, so scheduling is its own job.' });
+  var SPEC = {
+    research: { id: 'risk', name: 'Risk Checker', job: 'Argues the other side: what could go wrong, what data is missing and what would make the conclusion wrong.', output: 'the top three risks, each with evidence', rules: ['Cite the specialist value or fact each risk rests on.'], why: 'Research is better when one agent is paid to disagree.' },
+    sales: { id: 'qual', name: 'Lead Qualifier', job: 'Scores each lead on fit and buying intent and decides who gets a follow-up first.', output: 'lead → score 1–5 → reason → next step', rules: ['Score on facts from the lead, not guesses.'], why: 'Sales work needs a ranked list before anyone writes.' },
+    support: { id: 'answer', name: 'Answer Finder', job: 'Finds the answer in the help docs and past replies, and says plainly when there isn’t one.', output: 'question → answer → source, or “no answer, send to a person”', rules: ['Refunds, legal threats and angry customers go to a person.'], why: 'Support answers must come from your docs, not the model’s memory.' },
+    content: { id: 'strat', name: 'Strategist', job: 'Picks the audience, angle and channel for each piece before anything is written.', output: 'piece → audience → angle → channel', rules: ['One clear angle per piece.'], why: 'Content needs a plan before copy.' },
+    ops: { id: 'proc', name: 'Process Clerk', job: 'Does the repetitive step (matching, de-duplicating, filing) exactly the same way every time.', output: 'items processed, with what was done to each', rules: ['Follow the written procedure; flag anything that doesn’t fit it.'], why: 'Admin work is a repeatable procedure, so one agent owns it.' },
+    jobs: { id: 'match', name: 'Job Matcher', job: 'Compares each posting with the resume and scores the fit, listing matches and gaps.', output: 'posting → fit 1–5 → top matches → gaps', rules: ['Only claim skills that appear in the resume.'], why: 'Applications should start from an honest fit score.' }
+  }[b.kind];
+  R.push({ id: SPEC.id, name: SPEC.name, stage: 2, p: 85, job: SPEC.job, tools: [], output: SPEC.output, rules: SPEC.rules, why: SPEC.why });
+  if (b.output !== 'records') {
+    var wn = b.output === 'emails' ? 'Message Writer' : b.output === 'posts' ? 'Copywriter' : 'Writer';
+    R.push({ id: 'writer', name: wn, stage: 3, p: 92, job: 'Turns the handoffs into ' + OUT_NAME[b.output] + ', adding nothing the specialists didn’t hand over.', tools: [], output: OUT_NAME[b.output], rules: ['Use only facts and values from the handoffs.', b.output === 'emails' ? 'One email per person, under 120 words each.' : b.output === 'posts' ? 'One post per channel, within its length limit.' : 'Lead with the answer; keep it to one page.'], why: 'You want ' + OUT_NAME[b.output] + ', and only one agent writes prose.' });
+  }
+  if (chk('legal')) R.push({ id: 'legal', name: 'Compliance', stage: 4, p: 70, job: 'Checks claims, promises and regulated language before anything ships.', tools: [], output: 'pass, or each problem line with a fix', rules: [CHECK_RULE.legal], why: 'You asked for a legal and compliance check.' });
+  if (chk('privacy')) R.push({ id: 'privacy', name: 'Privacy Guard', stage: 4, p: 58, job: 'Removes personal data that doesn’t need to leave the team.', tools: [], output: 'the cleaned output and what was removed', rules: [CHECK_RULE.privacy], why: 'You asked that no private data leaks.' });
+  if (chk('budget')) R.push({ id: 'budget', name: 'Budget Guard', stage: 4, p: 45, job: 'Counts tool calls and model spend and stops the run at the limit.', tools: [], output: 'spend so far against the limit', rules: [CHECK_RULE.budget], why: 'You set a cost limit.' });
+  R.push({ id: 'review', name: 'Reviewer', stage: 5, p: 95, always: true, job: 'Checks the final work against your checklist and can send it back once with a reason.', tools: [], output: 'APPROVE, or REVISE: the reason, then up to three fixes', rules: b.checks.map(function(c){ return CHECK_RULE[c]; }).concat(['Compare every number in the draft with the handoffs.']), why: 'Someone has to be able to say no before it ships.' });
+  return R;
+}
+
+function build(){
+  var b = { goal: $('goal').value.trim(), kind: radio('kind'), inputs: checks('inputs'), output: radio('output'), autonomy: radio('autonomy'), checks: checks('checks'), size: +radio('size') };
+  var all = roles(b), cap = b.size, keep = all.filter(function(r){ return r.always; }), rest = all.filter(function(r){ return !r.always; }).sort(function(a, c){ return c.p - a.p; });
+  var cut = [];
+  rest.forEach(function(r){ if (keep.length < cap) keep.push(r); else cut.push(r); });
+  keep.sort(function(a, c){ return a.stage - c.stage || c.p - a.p; });
+  /* who hands to whom */
+  var byStage = {}; keep.forEach(function(r){ (byStage[r.stage] = byStage[r.stage] || []).push(r); });
+  var stages = Object.keys(byStage).map(Number).sort(function(a, c){ return a - c; });
+  keep.forEach(function(r){ var i = stages.indexOf(r.stage), nx = stages[i + 1]; r.handsTo = nx == null ? (b.autonomy === 'auto' ? 'ships automatically' : 'you') : byStage[nx].map(function(x){ return x.name; }).join(', '); r.from = i === 0 ? 'your goal' : byStage[stages[i - 1]].map(function(x){ return x.name; }).join(', '); });
+  TEAM = { brief: b, agents: keep, cut: cut, stages: stages, byStage: byStage };
+  render();
+}
+var TEAM = null, STAGE_NAME = ['Plan', 'Gather', 'Specialize', 'Write', 'Guard', 'Review'];
+
+function render(){
+  var t = TEAM, b = t.brief;
+  $('t-count').innerHTML = ''; $('t-count').appendChild(document.createTextNode(String(t.agents.length))); $('t-count').appendChild(el('small', null, 'agents'));
+  $('t-sub').textContent = (b.goal ? '“' + (b.goal.length > 90 ? b.goal.slice(0, 88) + '…' : b.goal) + '”' : 'Describe the job on the left to start.') ;
+  /* flow */
+  var fl = $('flow'); fl.textContent = '';
+  t.stages.forEach(function(sn){
+    var st = el('div', 'stage'); st.appendChild(el('div', 'sn', STAGE_NAME[sn]));
+    t.byStage[sn].forEach(function(r){ var c = el('div', 'chip'); c.id = 'chip-' + r.id; c.appendChild(el('i')); c.appendChild(document.createTextNode(r.name)); st.appendChild(c); });
+    fl.appendChild(st);
+  });
+  var last = el('div', 'stage'); last.appendChild(el('div', 'sn', b.autonomy === 'auto' ? 'Ships' : 'You'));
+  last.appendChild(el('div', 'chip human', b.autonomy === 'draft' ? 'You send it' : b.autonomy === 'approve' ? 'You approve' : 'Logged & sent'));
+  fl.appendChild(last);
+  /* agent cards */
+  var ag = $('agents'); ag.textContent = '';
+  t.agents.forEach(function(r){
+    var c = el('article', 'agent'); c.id = 'card-' + r.id;
+    var h = el('h3'); h.appendChild(el('i')); h.appendChild(document.createTextNode(r.name)); c.appendChild(h);
+    c.appendChild(el('p', null, r.job));
+    var dl = el('dl');
+    [['Gets', r.from], ['Returns', r.output], ['Hands to', r.handsTo], ['Tools', r.tools.length ? r.tools.join(', ') : 'none']].forEach(function(kv){ dl.appendChild(el('dt', null, kv[0])); dl.appendChild(el('dd', null, kv[1])); });
+    c.appendChild(dl); ag.appendChild(c);
+  });
+  /* why */
+  var w = $('why'); w.textContent = ''; w.appendChild(el('b', null, 'Why these roles'));
+  var ul = el('ul'); t.agents.forEach(function(r){ var li = el('li'); li.appendChild(el('b', null, r.name + ': ')); li.appendChild(document.createTextNode(r.why)); ul.appendChild(li); });
+  if (t.cut.length){ var li = el('li'); li.appendChild(el('b', null, 'Left out to stay at ' + b.size + ': ')); li.appendChild(document.createTextNode(t.cut.map(function(r){ return r.name; }).join(', ') + '. Pick a bigger team to add them.')); ul.appendChild(li); }
+  w.appendChild(ul);
+  /* run tool row */
+  $('r-tool').hidden = !(b.inputs.indexOf('market') >= 0 && REAL);
+  renderExport();
+}
+
+/* ---------- exports */
+function prompt(r){
+  var b = TEAM.brief, lines = [];
+  lines.push('You are the ' + r.name + ' on a ' + TEAM.agents.length + '-agent team.');
+  lines.push('Team goal: ' + (b.goal || '[describe the goal]'));
+  lines.push('Your job: ' + r.job);
+  lines.push('You receive work from: ' + r.from + '.');
+  lines.push('Return: ' + r.output + '. Hand it to: ' + r.handsTo + '.');
+  lines.push('Tools you may use: ' + (r.tools.length ? r.tools.join(', ') : 'none') + '.');
+  lines.push('Rules:');
+  r.rules.concat(['Stay inside your job.', 'Never invent numbers, names, quotes or sources. If something is missing, say what is missing.']).forEach(function(x){ lines.push('- ' + x); });
+  return lines.join('\n');
+}
+function exportText(kind){
+  if (!TEAM) return '';
+  var b = TEAM.brief;
+  if (kind === 'prompts') return TEAM.agents.map(function(r){ return '### ' + r.name + '\n' + prompt(r); }).join('\n\n');
+  if (kind === 'single'){
+    var L2 = ['You will run a small team of specialists, one at a time, for this goal:', (b.goal || '[describe the goal]'), '', 'Work through these roles in order. Before each one, print its name as a heading. Each role sees only the outputs of the roles before it.', ''];
+    TEAM.agents.forEach(function(r, i){ L2.push((i + 1) + '. ' + r.name + ': ' + r.job + ' Output: ' + r.output + '.'); });
+    L2.push('', 'Rules for every role:', '- Never invent numbers, names, quotes or sources. Mark anything missing as MISSING.');
+    b.checks.forEach(function(c){ L2.push('- ' + CHECK_RULE[c]); });
+    L2.push('- The Reviewer starts with APPROVE or REVISE. On REVISE, redo the writing step once, then review again.');
+    L2.push(b.autonomy === 'auto' ? '- End with a log of every action taken.' : '- End by asking me to approve before anything is sent or changed.');
+    return L2.join('\n');
+  }
+  var cfg = { name: 'Agent team', goal: b.goal, kind: b.kind, inputs: b.inputs, output: b.output, autonomy: b.autonomy, checks: b.checks.map(function(c){ return CHECK_RULE[c]; }),
+    agents: TEAM.agents.map(function(r){ return { id: r.id, name: r.name, stage: STAGE_NAME[r.stage], job: r.job, tools: r.tools, receives_from: r.from, returns: r.output, hands_to: r.handsTo, rules: r.rules, system_prompt: prompt(r) }; }),
+    flow: TEAM.stages.map(function(sn){ return { stage: STAGE_NAME[sn], agents: TEAM.byStage[sn].map(function(r){ return r.id; }), parallel: TEAM.byStage[sn].length > 1 }; }).concat([{ stage: b.autonomy === 'auto' ? 'Ship and log' : 'Human approval', agents: [] }]) };
+  return JSON.stringify(cfg, null, 2);
+}
+var XK = 'prompts';
+function renderExport(){ $('x-out').textContent = exportText(XK); $('x-dl').textContent = XK === 'json' ? 'Download .json' : 'Download .txt'; }
+$('x-tabs').addEventListener('click', function(ev){ var bt = ev.target.closest('button'); if (!bt) return; XK = bt.getAttribute('data-v'); $('x-tabs').querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-selected', x === bt ? 'true' : 'false'); }); renderExport(); });
+$('x-copy').addEventListener('click', function(){
+  var txt = $('x-out').textContent, msg = $('x-msg');
+  try { navigator.clipboard.writeText(txt).then(function(){ msg.textContent = 'Copied.'; }, sel); } catch (e){ sel(); }
+  function sel(){ var r = document.createRange(); r.selectNodeContents($('x-out')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = 'Selected. Press Ctrl+C or ⌘C to copy.'; }
+});
+$('x-dl').addEventListener('click', function(){
+  var isJ = XK === 'json', blob = new Blob([$('x-out').textContent], { type: isJ ? 'application/json' : 'text/plain' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'agent-team' + (isJ ? '.json' : XK === 'single' ? '-one-chat.txt' : '-instructions.txt'); document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+});
+
+/* ---------- market data tool: real prices from Bull Run's saved history, computed here */
+var REAL = window.Lab && window.Lab.realMarket ? window.Lab.realMarket() : null;
+if (REAL){ REAL.order.forEach(function(sym){ var o = el('option', null, sym + ' · ' + REAL.series[sym].name); o.value = sym; $('r-sym').appendChild(o); }); }
+function marketFacts(sym){
+  var L = window.Lab, S = L.stats, F = L.fmt, s = REAL.series[sym], n = s.close.length, last = s.close[n - 1];
+  var six = s.close.slice(-126), sum = S.summary(six, 252), sma50 = S.sma(s.close, 50)[n - 1], rsi = S.rsi(s.close, 14)[n - 1];
+  var idx = REAL.series[REAL.index], beta = idx ? S.beta(S.returns(six), S.returns(idx.close.slice(-126))) : null;
+  var asOf = F.date(s.dates[n - 1]);
+  return ['source = ' + REAL.source + ' daily closes, as of ' + asOf,
+    'last_close = $' + F.price(last),
+    'return_6m = ' + F.pct(sum.ret, 1, true),
+    'volatility_annualized = ' + F.pct(sum.vol),
+    'max_drawdown_6m = ' + F.pct(sum.dd.dd),
+    '50_day_average = $' + F.price(sma50) + ' (price is ' + (last >= sma50 ? 'above' : 'below') + ')',
+    'rsi_14 = ' + rsi.toFixed(0),
+    beta != null ? 'beta_vs_SPY = ' + beta.toFixed(2) : null].filter(Boolean).join('\n');
+}
+
+/* ---------- live run: one call per agent, in order, through /api/agent */
+var LIVE = null, RUNNING = false;
+function checkLive(){
+  var note = $('r-note');
+  if (!HOSTED){ note.textContent = 'Live runs work on the hosted site. This copy can still design and export teams.'; note.hidden = false; $('r-go').disabled = true; return; }
+  fetch('/api/agent').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(j){
+    LIVE = j && j.live;
+    if (!LIVE){ note.textContent = 'Live runs are switched off right now. You can still design the team and export everything.'; note.hidden = false; $('r-go').disabled = true; }
+  });
+}
+function setState(id, st){ ['chip-', 'card-'].forEach(function(p){ var e = $(p + id); if (!e) return; e.classList.remove('working', 'done', 'sent-back'); if (st) e.classList.add(st); }); }
+function addMsg(from, to, text, cls, meta){
+  var li = el('li', 'msg' + (cls ? ' ' + cls : '')), hd = el('div', 'hd'), w = el('span');
+  w.appendChild(el('b', null, from)); w.appendChild(document.createTextNode(' → ' + to)); hd.appendChild(w); if (meta) hd.appendChild(el('span', null, meta));
+  li.appendChild(hd); li.appendChild(el('div', 'tx', text)); $('r-log').appendChild(li); li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function callAgent(r, task, inbox){
+  return fetch('/api/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ goal: TEAM.brief.goal || task, task: task, role: { name: r.name, job: r.job, rules: r.rules, output: r.output }, inbox: inbox }) })
+    .then(function(res){ return res.json().then(function(j){ if (!res.ok) throw new Error(j && j.error || 'The run failed.'); return j; }); });
+}
+$('r-go').addEventListener('click', function(){
+  if (RUNNING || !TEAM) return;
+  var task = $('r-task').value.trim() || TEAM.brief.goal;
+  if (!task){ $('r-status').textContent = 'Describe the job first, or pick an example.'; $('goal').focus(); return; }
+  RUNNING = true; $('r-go').disabled = true; $('r-log').textContent = ''; $('r-final').hidden = true;
+  TEAM.agents.forEach(function(r){ setState(r.id, null); });
+  var A = TEAM.agents, lead = A[0], mids = A.filter(function(r){ return r.stage >= 1 && r.stage <= 2; }).slice(0, 4), writer = A.filter(function(r){ return r.id === 'writer'; })[0], guards = A.filter(function(r){ return r.stage === 4; }).slice(0, 1), rev = A.filter(function(r){ return r.id === 'review'; })[0];
+  var calls = 0, tokens = 0, plan = '', facts = [], draft = '';
+  function meta(j){ calls++; if (j.usage) tokens += (j.usage.input || 0) + (j.usage.output || 0); return (j.usage ? j.usage.output + ' tokens' : ''); }
+  function step(r, inbox, to){ setState(r.id, 'working'); $('r-status').textContent = r.name + ' is working…'; return callAgent(r, task, inbox).then(function(j){ setState(r.id, 'done'); addMsg(r.name, to, j.text, null, meta(j)); return j.text; }); }
+  var toolFacts = null;
+  if (TEAM.brief.inputs.indexOf('market') >= 0 && REAL){ toolFacts = marketFacts($('r-sym').value || REAL.order[0]); }
+  step(lead, toolFacts ? [{ from: 'tool: market data', text: toolFacts }] : [], mids.map(function(r){ return r.name; }).join(', ') || 'team').then(function(p){
+    plan = p;
+    if (toolFacts) addMsg('Tool: market data', mids.map(function(r){ return r.name; }).join(', ') || 'team', toolFacts, 'tool', $('r-sym').value);
+    return mids.reduce(function(pr, r){ return pr.then(function(){
+      var inbox = [{ from: 'Lead', text: plan }].concat(toolFacts ? [{ from: 'tool: market data', text: toolFacts }] : []).concat(facts);
+      return step(r, inbox, writer ? writer.name : rev.name).then(function(t){ facts.push({ from: r.name, text: t }); });
+    }); }, Promise.resolve());
+  }).then(function(){
+    if (!writer){ draft = facts.map(function(f){ return f.from + ':\n' + f.text; }).join('\n\n'); return; }
+    return step(writer, [{ from: 'Lead', text: plan }].concat(facts), guards.length ? guards[0].name : rev.name).then(function(t){ draft = t; });
+  }).then(function(){
+    if (!guards.length) return;
+    return step(guards[0], [{ from: writer ? writer.name : 'team', text: draft }], rev.name).then(function(t){ facts.push({ from: guards[0].name, text: t }); });
+  }).then(function(){ return review(1); }).then(function(){
+    $('r-status').textContent = 'Done · ' + calls + ' model calls · ' + tokens.toLocaleString() + ' tokens.';
+  }).catch(function(e){
+    $('r-status').textContent = e.message || 'The run stopped.'; A.forEach(function(r){ var c = $('card-' + r.id); if (c && c.classList.contains('working')) setState(r.id, null); });
+  }).then(function(){ RUNNING = false; $('r-go').disabled = false; });
+
+  function review(round){
+    return callAgent(rev, task, [{ from: writer ? writer.name : 'team', text: draft }].concat(facts)).then(function(j){
+      var ok = /^\s*\**\s*APPROVE/i.test(j.text);
+      setState(rev.id, ok ? 'done' : 'sent-back'); addMsg(rev.name, ok ? 'you' : (writer ? writer.name : 'team'), j.text, ok ? 'verdict-ok' : 'verdict-no', meta(j));
+      if (ok || round >= 2 || !writer){ show(ok ? 'Approved by the Reviewer' : 'Shipped with the Reviewer’s notes'); return; }
+      return step(writer, [{ from: 'Reviewer', text: j.text }, { from: writer.name + ' (previous draft)', text: draft }].concat(facts), rev.name).then(function(t){ draft = t; return review(round + 1); });
+    });
+  }
+  function show(title){ $('r-ftitle').textContent = title + (TEAM.brief.autonomy === 'auto' ? ' · sent and logged' : TEAM.brief.autonomy === 'draft' ? ' · ready for you to send' : ' · waiting for your approval'); $('r-ftext').textContent = draft; $('r-final').hidden = false; }
+});
+
+/* ---------- start */
+$('brief').addEventListener('input', build);
+$('brief').addEventListener('change', build);
+fill(EXAMPLES[0]);
+checkLive();
+})();
+</script>
+</body>
+</html>

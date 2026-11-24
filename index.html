@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nate Danilovich · Data, AI and consulting</title>
+<meta name="description" content="Nate Danilovich, IT & Management student at the University at Buffalo. NOCO Payback, Bull Run market analytics and Agent Studio, built by me.">
+<meta property="og:title" content="Nate Danilovich · Data, AI and consulting">
+<meta property="og:description" content="IT & Management student at the University at Buffalo who builds analytics and AI tools.">
+<meta name="theme-color" content="#0a1e3f">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: name and facts on top, then the two builds side by side (NOCO on navy, Bull Run live on white), Agent Studio, experience, contact. */
+:root{
+  --paper:#f2f5f9; --surface:#ffffff; --ink:#0a1e3f; --navy-2:#14305e; --blue:#2a6fdb; --sky:#bbd9f4; --sky-soft:#dcebf9;
+  --muted:#5d6878; --line:#d3dbe6; --line-strong:#aeb9c8; --red:#d7263d; --up:#0b7a53; --down:#c21f38; --on-navy:#e9f1fb; --on-navy-muted:#9fb4d3;
+  --display:"Archivo","Arial Narrow",Impact,sans-serif; --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; --serif:"Instrument Serif",Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.55 var(--body);padding-top:env(safe-area-inset-top,0px)}
+[hidden]{display:none!important}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.mono{font:500 11.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* nav */
+.top{position:sticky;top:0;z-index:20;background:rgba(242,245,249,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid transparent}
+.top.s{border-color:var(--line)}
+.top::before{content:"";position:absolute;left:0;top:0;height:3px;width:var(--p,0%);background:var(--red)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.me{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700}
+.me img{width:34px;height:34px}
+.nav{display:flex;gap:22px;font-size:14.5px;font-weight:600}
+.nav a{text-decoration:none}.nav a:hover{color:var(--blue)}
+@media (max-width:760px){.nav{display:none}}
+
+/* hero */
+.hero{padding-block:34px 30px}
+.loc{margin-bottom:26px}
+.hgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:28px 48px;align-items:end}
+@media (max-width:860px){.hgrid{grid-template-columns:minmax(0,1fr)}}
+h1{margin:0;font:900 clamp(54px,9vw,112px)/.86 var(--display);font-stretch:85%;letter-spacing:-.01em;text-transform:uppercase}
+h1 span{display:block;font-weight:200;font-stretch:100%;letter-spacing:.01em}
+.role{font:700 clamp(24px,2.8vw,34px)/1.1 var(--body);margin:20px 0 8px}
+.sub{color:var(--muted);font-size:15px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.sub a{color:var(--ink);font-weight:600;text-underline-offset:4px}
+.sub i{width:5px;height:5px;border-radius:50%;background:var(--red)}
+.tag{font:italic 400 clamp(22px,2.4vw,28px)/1.2 var(--serif);margin:0 0 10px}
+.bio{margin:0 0 18px;max-width:46ch}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:none;color:var(--ink);padding:11px 20px;border-radius:999px;font-weight:650;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.btn:hover{background:var(--sky-soft)}
+.btn.solid{background:var(--ink);color:#fff}.btn.solid:hover{background:var(--navy-2)}
+.btn.light{border-color:#fff;color:#fff}.btn.light:hover{background:rgba(255,255,255,.1)}
+.btn.lsolid{background:#fff;color:var(--ink);border-color:#fff}.btn.lsolid:hover{background:var(--on-navy)}
+.btn.sm{padding:8px 15px;font-size:14px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;border-top:1.5px solid var(--ink);margin-top:30px;padding-top:14px}
+@media (max-width:760px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.facts b{display:block;font:700 clamp(18px,2vw,23px)/1.15 var(--body);margin-top:3px}
+
+/* builds: side by side */
+.builds{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding-block:10px 20px;align-items:stretch}
+@media (max-width:980px){.builds{grid-template-columns:minmax(0,1fr)}}
+.card{border-radius:22px;padding:26px;display:flex;flex-direction:column;min-width:0}
+.card h2{font:900 clamp(34px,4vw,50px)/.9 var(--display);font-stretch:80%;text-transform:uppercase;margin:8px 0 4px}
+.card .lede{font:italic 400 clamp(19px,1.8vw,23px)/1.25 var(--serif);margin:0 0 12px}
+.card p{margin:0 0 12px}
+.card .acts{margin-top:auto;padding-top:14px}
+.noco{background:var(--ink);color:var(--on-navy)}
+.noco .mono{color:var(--on-navy-muted)}
+.noco .lg{background:#fff;border-radius:8px;padding:5px 8px;width:max-content;margin-bottom:12px}
+.noco .lg img{display:block;height:24px}
+.shot{display:block;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.15);margin:6px 0 8px}
+.shot img{display:block;width:100%;height:auto}
+.cap{font:500 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy-muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 4px}
+.stats div{border-top:1px solid rgba(255,255,255,.25);padding-top:8px}
+.stats b{display:block;font:800 21px/1.1 var(--display);font-stretch:85%;color:#fff;margin:3px 0}
+.stats span{font-size:12.5px;color:var(--on-navy-muted);line-height:1.35;display:block}
+@media (max-width:520px){.stats{grid-template-columns:minmax(0,1fr)}}
+
+.bull{background:var(--surface);border:1.5px solid var(--ink)}
+.livetag{display:inline-flex;align-items:center;gap:7px}
+.livetag i{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px #dff3ea}
+.pick{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+.pick button{border:1.5px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:5px 12px;font:600 13px var(--mono);cursor:pointer}
+.pick button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.quote{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.quote b{font:800 34px/1 var(--display);font-stretch:85%}
+.quote .d{font-weight:700;font-size:15px}
+.quote .d.up{color:var(--up)}.quote .d.down{color:var(--down)}
+.quote small{color:var(--muted);font-size:12.5px}
+.chart{position:relative;margin:8px 0 6px;height:220px}
+.wl{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px;font-variant-numeric:tabular-nums}
+.wl th{font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}
+.wl th:first-child,.wl td:first-child{text-align:left}
+.wl td{padding:6px;border-bottom:1px solid var(--line);text-align:right;cursor:pointer}
+.wl tr:hover td{background:var(--paper)}
+.wl tr.on td{background:var(--sky-soft)}
+.wl td b{font:700 13px var(--mono)}
+.wl .up{color:var(--up)}.wl .down{color:var(--down)}
+.wl td svg{vertical-align:middle}
+section[id],article[id]{scroll-margin-top:76px}
+.chart svg{display:block;width:100%;height:100%;overflow:visible}
+.chart .tip{position:absolute;top:0;transform:translateX(-50%);background:var(--ink);color:#fff;font:600 11.5px var(--mono);padding:4px 7px;border-radius:6px;pointer-events:none;white-space:nowrap}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--c);vertical-align:3px;margin-right:6px}
+.calls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (max-width:520px){.calls{grid-template-columns:minmax(0,1fr)}}
+.calls > div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);min-width:0}
+.calls .k{font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.calls b{display:block;font:800 21px/1.1 var(--display);font-stretch:85%;margin:4px 0 2px}
+.calls b.up{color:var(--up)}.calls b.down{color:var(--down)}
+.calls span{font-size:12.5px;color:var(--muted);line-height:1.35;display:block}
+.fine{font-size:12px;color:var(--muted);margin:10px 0 0}
+
+/* agent studio band */
+.studio{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px 40px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px;margin-block:0 20px}
+@media (max-width:980px){.studio{grid-template-columns:minmax(0,1fr)}}
+.studio h2{font:900 clamp(34px,4vw,50px)/.9 var(--display);font-stretch:80%;text-transform:uppercase;margin:8px 0 8px}
+.studio p{margin:0 0 12px}
+.ex{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ex button{border:1.5px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:650;cursor:pointer}
+.ex button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.flow span{border:1.5px solid var(--ink);border-radius:10px;padding:6px 10px;font-weight:700;font-size:13.5px;background:var(--paper)}
+.flow span.h{border-style:dashed;border-color:#a85a00;color:#a85a00;background:none}
+.flow em{font-style:normal;color:var(--muted)}
+.flowmeta{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* experience */
+.sec{padding-block:44px 30px}
+.sec h2.big{font:900 clamp(34px,4vw,50px)/.9 var(--display);font-stretch:80%;text-transform:uppercase;margin:0 0 18px}
+.xp{border-top:1.5px solid var(--ink)}
+.xp > div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr) minmax(0,1.6fr);gap:6px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.xp > div{grid-template-columns:minmax(0,1fr)}}
+.xp h3{margin:0;font:700 18px/1.25 var(--body)}
+.xp .r{font-weight:600;font-size:14.5px}
+.xp p{margin:0;color:var(--muted);font-size:15px}
+
+/* contact */
+.contact{background:var(--ink);color:var(--on-navy);margin-top:30px}
+.contact .wrap{padding-block:52px 46px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:end}
+@media (max-width:760px){.contact .wrap{grid-template-columns:minmax(0,1fr)}}
+.contact h2{font:900 clamp(40px,6vw,70px)/.9 var(--display);font-stretch:80%;text-transform:uppercase;margin:0 0 12px;color:#fff}
+.mail{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:clamp(18px,2.2vw,24px);font-weight:700;margin-bottom:16px}
+.mail a{color:#fff;text-underline-offset:5px;overflow-wrap:anywhere}
+.copy{border:1px solid rgba(255,255,255,.4);background:none;color:#fff;border-radius:999px;padding:5px 12px;font:600 12px var(--mono);cursor:pointer}
+footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-block:18px;font:500 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy-muted)}
+footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.12)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top" id="top"><div class="wrap">
+  <a class="me" href="#"><img src="assets/logo.svg" alt="">Nate Danilovich</a>
+  <nav class="nav" aria-label="Main">
+    <a href="#builds">Builds</a><a href="/lab">Bull Run</a><a href="/agents">Agent Studio</a><a href="#work">Experience</a><a href="#contact">Contact</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="hero"><div class="wrap">
+    <div class="mono loc">Buffalo, NY &nbsp;/&nbsp; University at Buffalo ’28</div>
+    <div class="hgrid">
+      <div>
+        <h1>Nate <span>Danilovich</span></h1>
+        <div class="role">Business &amp; Technology Analyst</div>
+        <div class="sub">Founder, <a href="#work">Small Market Software</a><i></i>IT &amp; Management, University at Buffalo</div>
+      </div>
+      <div>
+        <p class="tag">Data, AI and process work for real businesses.</p>
+        <p class="bio">I analyze business data, build small AI tools, and run a web and automation shop for local companies. Looking for a Summer 2027 internship in <b>data, AI or consulting</b>.</p>
+        <div class="btns"><a class="btn solid" href="#contact">Get in touch →</a><a class="btn" href="resume.pdf">Download resume</a><a class="btn" href="https://www.linkedin.com/in/nate-danilovich" target="_blank" rel="noopener">LinkedIn</a></div>
+      </div>
+    </div>
+    <div class="facts">
+      <div><span class="mono">Degree</span><b>B.S. IT &amp; Management</b></div>
+      <div><span class="mono">Minor</span><b>Cybersecurity</b></div>
+      <div><span class="mono">GPA</span><b>3.8</b></div>
+      <div><span class="mono">Graduating</span><b>May 2028</b></div>
+      <div><span class="mono">Athletics</span><b>UB men’s lacrosse</b></div>
+    </div>
+  </div></section>
+
+  <section id="builds"><div class="wrap">
+    <div class="builds">
+      <article class="card noco" id="noco">
+        <div class="lg"><img src="assets/noco-logo.png" alt="NOCO"></div>
+        <div class="mono">Featured build · UB AI for Good · Built for NOCO</div>
+        <h2>NOCO Payback</h2>
+        <p class="lede">From a free visit to a same-day quote.</p>
+        <p>NOCO’s energy-upgrade quotes for commercial buildings took about two weeks of site notes and spreadsheets. I led the design and build of a customer app and a staff console that share one calculation engine. AI reads the utility bill and the technician’s walkthrough; formulas do the math, so every dollar traces back to its inputs.</p>
+        <a class="shot" href="/noco-payback"><img src="assets/noco-payback.jpg" width="1440" height="885" alt="NOCO Payback demo: the customer’s phone app comparing two offers next to the NOCO staff console" loading="lazy"></a>
+        <div class="cap">Step 6 of 9 in the demo: offer sent · public Buffalo and NYS data</div>
+        <div class="stats">
+          <div><span>Quote time</span><b>2 weeks → same day</b><span>Offer is ready before the technician leaves.</span></div>
+          <div><span>Typing saved</span><b>21 of 21 inputs</b><span>Filled from city records, the bill photo and the walkthrough.</span></div>
+          <div><span>Design rule</span><b>AI reads. Math decides.</b><span>The model extracts facts; formulas compute savings and payback.</span></div>
+        </div>
+        <div class="acts btns"><a class="btn lsolid sm" href="/noco-payback">Run the demo →</a><a class="btn light sm" href="https://github.com/ndanilovich12/noco-payback" target="_blank" rel="noopener">View the code</a></div>
+      </article>
+
+      <article class="card bull" id="lab">
+        <div class="mono livetag"><i></i>Live market tool</div>
+        <h2>Bull Run</h2>
+        <p class="lede">Real prices, Wall Street’s view, and small calls you can check.</p>
+        <div class="quote" id="q"></div>
+        <div class="chart" id="chart" role="img" aria-label="Six-month price chart"></div>
+        <div class="legend"><span style="--c:var(--ink)">Daily close</span><span style="--c:#e08a00">50-day average</span></div>
+        <div class="calls" id="calls"></div>
+        <table class="wl" id="wl" aria-label="Watchlist"><thead><tr><th>Stock</th><th>Last</th><th>6 months</th><th>Trend</th></tr></thead><tbody></tbody></table>
+        <p class="fine" id="src"></p>
+        <div class="acts btns"><a class="btn solid sm" href="/lab">Open Bull Run →</a><a class="btn sm" href="/lab#forecast">Run a forecast</a><a class="btn sm" href="https://github.com/ndanilovich12/basis" target="_blank" rel="noopener">View the code</a></div>
+      </article>
+    </div>
+
+    <article class="studio" id="studio">
+      <div>
+        <div class="mono">Agent workflow builder · Runs on Claude</div>
+        <h2>Agent Studio</h2>
+        <p>Describe a job in a few answers: the goal, what the team can use, what it hands back, how much freedom it gets and what it must check. Agent Studio picks the roles, wires the handoffs, writes every agent’s instructions, and can run the team live with Claude, one visible call per agent.</p>
+        <div class="btns"><a class="btn solid sm" href="/agents">Build a team →</a></div>
+      </div>
+      <div>
+        <div class="ex" id="ex" role="group" aria-label="Example jobs"></div>
+        <div class="flow" id="flow"></div>
+        <div class="flowmeta" id="flowmeta"></div>
+      </div>
+    </article>
+  </div></section>
+
+  <section class="sec" id="work"><div class="wrap">
+    <h2 class="big">Experience</h2>
+    <div class="xp">
+      <div><h3>Small Market Software</h3><div class="r">Founder</div><p>Websites, AI automations and marketing for small businesses. A free working demo within 24 hours, and clients own what I build.</p></div>
+      <div><h3>Buffalo Undergraduate Consulting Group</h3><div class="r">Business Analyst</div><p>Analyze operational and financial data for regional clients, model better workflows and present the findings to executive audiences.</p></div>
+      <div><h3>Handshake</h3><div class="r">AI / LLM Trainer &amp; Developer Intern</div><p>Write and refine prompts, review model outputs and give structured feedback that improves model performance.</p></div>
+      <div><h3>IBM Z</h3><div class="r">Enterprise Systems Analyst</div><p>Mainframe architecture, high-volume transaction processing and zero-trust security for banking.</p></div>
+      <div><h3>University at Buffalo</h3><div class="r">Selected coursework</div><p>An email triage assistant tested across three versions (MGS 430), a local AI stack benchmark on a laptop with no graphics card, a cloud vendor evaluation (MGS 402) and a job application agent.</p></div>
+    </div>
+  </div></section>
+</main>
+
+<section class="contact" id="contact"><div class="wrap">
+  <div>
+    <h2>Contact</h2>
+    <p>Open to Summer 2027 internships in data, AI and consulting. Buffalo or remote.</p>
+  </div>
+  <div>
+    <div class="mail"><a href="mailto:ndanilovich12@gmail.com" id="mail">ndanilovich12@gmail.com</a><button class="copy" type="button" id="copy">Copy</button></div>
+    <div class="btns"><a class="btn lsolid sm" href="resume.pdf">Download resume</a><a class="btn light sm" href="https://www.linkedin.com/in/nate-danilovich" target="_blank" rel="noopener">LinkedIn</a><a class="btn light sm" href="https://github.com/ndanilovich12" target="_blank" rel="noopener">GitHub</a></div>
+  </div>
+</div></section>
+<footer><div class="wrap"><span>© 2026 Nate Danilovich</span><span>Buffalo, NY</span></div></footer>
+
+<script src="lab-core.js"></script>
+<script src="tech-data.js"></script>
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+function el(t, c, x){ var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+var HOSTED = /^https?:$/.test(location.protocol);
+
+/* nav: border and reading progress */
+var top = $('top');
+function onScroll(){ var h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight); top.style.setProperty('--p', (p * 100).toFixed(1) + '%'); top.classList.toggle('s', h.scrollTop > 8); }
+window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+/* copy email */
+$('copy').addEventListener('click', function(){ var b = this; try { navigator.clipboard.writeText('ndanilovich12@gmail.com').then(function(){ b.textContent = 'Copied'; setTimeout(function(){ b.textContent = 'Copy'; }, 1500); }); } catch (e){} });
+
+/* =========== Bull Run, live on the home page =========== */
+var L = window.Lab, F = L && L.fmt, S = L && L.stats, real = L && L.realMarket ? L.realMarket() : null;
+var SYMS = ['AAPL','NVDA','MSFT','TSLA','AMZN'], cur = 'AAPL', fresh = {}, street = {}; var SIM = {};
+function getJSON(u){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, 8000); return fetch(u, { signal: c.signal }).then(function(r){ clearTimeout(t); if (!r.ok) throw 0; return r.json(); }); }
+if (real){
+  SYMS = SYMS.filter(function(s){ return real.series[s]; });
+  draw();
+} else { $('lab').querySelector('.chart').hidden = true; }
+
+function series(sym){ return fresh[sym] || real.series[sym]; }
+function draw(){
+  var s = series(cur), n = s.close.length, last = s.close[n - 1], prev = s.close[n - 2], day = last / prev - 1;
+  watch();
+  /* quote line */
+  var q = $('q'); q.textContent = '';
+  q.appendChild(el('b', null, '$' + F.price(last)));
+  q.appendChild(el('span', 'd ' + (day >= 0 ? 'up' : 'down'), (day >= 0 ? '▲ ' : '▼ ') + F.pct(Math.abs(day), 2)));
+  q.appendChild(el('small', null, s.name + ' · close ' + F.date(s.dates[n - 1])));
+  chart(s);
+  calls(s);
+  $('src').textContent = 'Daily closes from Yahoo Finance' + (fresh[cur] ? ', updated today' : ', as of ' + F.date(real.asOf)) + (street[cur] && street[cur].configured ? '. Analyst data from ' + street[cur].sources.join(' and ') : '') + '. Not investment advice.';
+  if (HOSTED && !fresh[cur]) refresh(cur);
+  if (HOSTED && !(cur in street)) loadStreet(cur);
+}
+function watch(){
+  var tb = $('wl').tBodies[0]; tb.textContent = '';
+  SYMS.forEach(function(sym){
+    var s = series(sym), n = s.close.length, six = s.close.slice(-126), r = six[six.length - 1] / six[0] - 1, tr = el('tr', sym === cur ? 'on' : null);
+    var t1 = el('td'); t1.appendChild(el('b', null, sym)); tr.appendChild(t1);
+    tr.appendChild(el('td', null, '$' + F.price(s.close[n - 1])));
+    tr.appendChild(el('td', r >= 0 ? 'up' : 'down', F.pct(r, 1, true)));
+    var t4 = el('td'); t4.innerHTML = L.spark(six.filter(function(v, i){ return i % 2 === 0; }), r >= 0 ? '#0b7a53' : '#c21f38', 90, 24); tr.appendChild(t4);
+    tr.addEventListener('click', function(){ cur = sym; draw(); });
+    tb.appendChild(tr);
+  });
+}
+function refresh(sym){
+  getJSON('/api/quotes/' + sym + '?range=1y&interval=1d').then(function(j){
+    var r = j.chart.result[0], qd = r.indicators.quote[0], dates = [], close = [];
+    r.timestamp.forEach(function(t, k){ if (qd.close[k] != null){ dates.push(new Date(new Date(t * 1000).toISOString().slice(0, 10) + 'T00:00:00Z')); close.push(qd.close[k]); } });
+    if (close.length < 120) return;
+    fresh[sym] = { sym: sym, name: real.series[sym].name, close: close, dates: dates, ppy: 252 };
+    if (sym === cur) draw();
+  }).catch(function(){});
+}
+function loadStreet(sym){
+  street[sym] = null;
+  getJSON('/api/street?symbol=' + sym).then(function(j){ street[sym] = j; if (sym === cur) draw(); }).catch(function(){});
+}
+function chart(s){
+  var box = $('chart'), W = box.clientWidth || 600, H = 220, n = s.close.length, from = Math.max(0, n - 126);
+  var c = s.close.slice(from), d = s.dates.slice(from), sma = S.sma(s.close, 50).slice(from);
+  var lo = Math.min.apply(null, c.concat(sma.filter(function(v){ return v != null; }))), hi = Math.max.apply(null, c.concat(sma.filter(function(v){ return v != null; })));
+  var pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  var x = function(i){ return i / (c.length - 1) * (W - 44); }, y = function(v){ return 8 + (1 - (v - lo) / (hi - lo)) * (H - 30); };
+  var path = c.map(function(v, i){ return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join('');
+  var area = path + 'L' + x(c.length - 1).toFixed(1) + ' ' + (H - 22) + 'L0 ' + (H - 22) + 'Z';
+  var mp = ''; sma.forEach(function(v, i){ if (v == null) return; mp += (mp ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); });
+  var ticks = [], step = (hi - lo) / 3; for (var k = 0; k <= 3; k++) ticks.push(lo + step * k);
+  var months = [], lastM = -1; d.forEach(function(dt, i){ var m = dt.getUTCMonth(); if (m !== lastM && i > 3){ months.push([i, ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]]); } lastM = m; });
+  var up = c[c.length - 1] >= c[0], col = up ? '#0b7a53' : '#c21f38';
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2a6fdb" stop-opacity=".22"/><stop offset="1" stop-color="#2a6fdb" stop-opacity="0"/></linearGradient></defs>';
+  ticks.forEach(function(t){ svg += '<line x1="0" x2="' + (W - 44) + '" y1="' + y(t).toFixed(1) + '" y2="' + y(t).toFixed(1) + '" stroke="#d3dbe6" stroke-width="1"/><text x="' + (W - 40) + '" y="' + (y(t) + 4).toFixed(1) + '" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#5d6878">' + Math.round(t) + '</text>'; });
+  months.forEach(function(m){ svg += '<text x="' + x(m[0]).toFixed(1) + '" y="' + (H - 6) + '" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#5d6878" text-anchor="middle">' + m[1] + '</text>'; });
+  svg += '<path d="' + area + '" fill="url(#g)"/><path d="' + mp + '" fill="none" stroke="#e08a00" stroke-width="1.6"/><path d="' + path + '" fill="none" stroke="#0a1e3f" stroke-width="2.2" stroke-linejoin="round"/>';
+  svg += '<circle cx="' + x(c.length - 1).toFixed(1) + '" cy="' + y(c[c.length - 1]).toFixed(1) + '" r="4" fill="' + col + '" stroke="#fff" stroke-width="2"/>';
+  svg += '<line id="hx" x1="0" x2="0" y1="6" y2="' + (H - 22) + '" stroke="#0a1e3f" stroke-width="1" stroke-dasharray="3 3" opacity="0"/><circle id="hd" r="4" fill="#0a1e3f" opacity="0"/></svg>';
+  box.innerHTML = svg;
+  var tip = el('div', 'tip'); tip.hidden = true; box.appendChild(tip);
+  var sv = box.querySelector('svg'), hx = sv.querySelector('#hx'), hd = sv.querySelector('#hd');
+  function move(ev){
+    var r = sv.getBoundingClientRect(), px = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) / r.width * W, i = Math.max(0, Math.min(c.length - 1, Math.round(px / (W - 44) * (c.length - 1))));
+    hx.setAttribute('x1', x(i)); hx.setAttribute('x2', x(i)); hx.setAttribute('opacity', '.5'); hd.setAttribute('cx', x(i)); hd.setAttribute('cy', y(c[i])); hd.setAttribute('opacity', '1');
+    tip.hidden = false; tip.style.left = (x(i) / W * 100) + '%'; tip.textContent = F.date(d[i]).replace(/, \d{4}$/, '') + ' · $' + F.price(c[i]);
+  }
+  sv.addEventListener('mousemove', move); sv.addEventListener('touchmove', move, { passive: true });
+  sv.addEventListener('mouseleave', function(){ tip.hidden = true; hx.setAttribute('opacity', '0'); hd.setAttribute('opacity', '0'); });
+}
+/* same beta and simulation settings as the Bull Run page, so both show the same odds */
+function betaVsIndex(s){
+  var idx = real.series[real.index]; if (!idx || idx === s) return 1;
+  var m = {}, x = [], y = [], i;
+  for (i = 1; i < idx.close.length; i++) m[idx.dates[i].getTime()] = idx.close[i] / idx.close[i - 1] - 1;
+  for (i = 1; i < s.close.length; i++){ var k = s.dates[i].getTime(); if (k in m){ x.push(s.close[i] / s.close[i - 1] - 1); y.push(m[k]); } }
+  return x.length > 20 ? S.beta(x, y) : 1;
+}
+function calls(s){
+  var n = s.close.length, last = s.close[n - 1], key = s.sym + n + last;
+  if (!SIM[key]){ var f = L.forecast(s.close.slice(-504), { steps: 63, runs: 500, ppy: 252, beta: betaVsIndex(s), seed: 7 }); SIM[key] = f.stats; }
+  var st = SIM[key], sma50 = S.sma(s.close, 50)[n - 1], box = $('calls'); box.textContent = '';
+  function card(k, v, cls, sub){ var dv = el('div'); dv.appendChild(el('div', 'k', k)); dv.appendChild(el('b', cls, v)); dv.appendChild(el('span', null, sub)); box.appendChild(dv); }
+  card('3-month odds', F.pct(st.pUp, 0) + ' higher', st.pUp >= 0.55 ? 'up' : st.pUp <= 0.45 ? 'down' : '', 'Median $' + F.price(st.median) + ' across 500 runs of its real daily moves');
+  var j = street[s.sym];
+  if (j && j.configured && j.recs && j.recs[0]){
+    var r = j.recs[0], buy = r.strongBuy + r.buy, all = buy + r.hold + r.sell + r.strongSell;
+    card('Analysts', F.pct(buy / (all || 1), 0) + ' buy', buy / (all || 1) >= 0.6 ? 'up' : '', all + ' analysts · ' + r.hold + ' hold · ' + (r.sell + r.strongSell) + ' sell');
+  } else {
+    var a = last >= sma50; card('Trend', a ? 'Above 50-day' : 'Below 50-day', a ? 'up' : 'down', '50-day average $' + F.price(sma50));
+  }
+  if (j && j.configured && j.next) card('Next earnings', F.date(new Date(j.next.date + 'T00:00:00Z')).replace(/, \d{4}$/, ''), '', j.next.epsEstimate != null ? 'EPS estimate $' + j.next.epsEstimate.toFixed(2) : 'Report date from Finnhub');
+  else { var six = s.close.slice(-126), sum = S.summary(six, 252); card('6-month return', F.pct(sum.ret, 1, true), sum.ret >= 0 ? 'up' : 'down', 'Max drawdown ' + F.pct(sum.dd.dd)); }
+}
+var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (real) chart(series(cur)); }, 120); });
+
+/* =========== Agent Studio preview: teams the builder produces for three example jobs =========== */
+var TEAMS = [
+  { label: 'Weekly stock brief', flow: ['Lead', 'Data Analyst', 'Researcher', 'Risk Checker', 'Writer', 'Reviewer'], end: 'You send it', meta: 'Uses market data and the web · checks every number has a source' },
+  { label: 'Follow up on new leads', flow: ['Lead', 'Inbox Triage', 'Researcher', 'Lead Qualifier', 'Message Writer', 'Reviewer'], end: 'You approve', meta: 'Uses email, CRM and the web · checks tone and private data' },
+  { label: 'Answer customer emails', flow: ['Lead', 'Inbox Triage', 'Researcher', 'Answer Finder', 'Message Writer', 'Reviewer'], end: 'You approve', meta: 'Uses email and help docs · refunds and complaints go to a person' }
+];
+var ti = 0;
+TEAMS.forEach(function(t, i){ var b = el('button', null, t.label); b.type = 'button'; b.addEventListener('click', function(){ ti = i; showTeam(); }); $('ex').appendChild(b); });
+function showTeam(){
+  var t = TEAMS[ti]; $('ex').querySelectorAll('button').forEach(function(b, i){ b.setAttribute('aria-pressed', i === ti ? 'true' : 'false'); });
+  var f = $('flow'); f.textContent = '';
+  t.flow.forEach(function(r, i){ if (i) f.appendChild(el('em', null, '→')); f.appendChild(el('span', null, r)); });
+  f.appendChild(el('em', null, '→')); f.appendChild(el('span', 'h', t.end));
+  $('flowmeta').textContent = t.flow.length + ' agents · ' + t.meta;
+}
+showTeam();
+})();
+</script>
+</body>
+</html>

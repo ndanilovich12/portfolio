@@ -1,0 +1,9 @@
+{
+  "name": "nate-danilovich-portfolio",
+  "private": true,
+  "description": "Nate Danilovich's portfolio: NOCO Payback, Bull Run and Agent Studio.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

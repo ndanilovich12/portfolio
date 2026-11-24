@@ -283,7 +283,7 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.12)}
       <div><div class="org"><span class="lg ok"><b style="background:#0a1e3f">SM</b><img class="fit" src="assets/logo.svg" alt=""></span><h3>Small Market Software</h3></div><div class="r">Founder</div><p>Websites, AI automations and marketing for small businesses. A free working demo within 24 hours, and clients own what I build.</p></div>
       <div><div class="org"><span class="lg"><b style="background:#005bbb">BC</b></span><h3>Buffalo Undergraduate Consulting Group</h3></div><div class="r">Business Analyst</div><p>Analyze operational and financial data for regional clients, model better workflows and present the findings to executive audiences.</p></div>
       <div><div class="org"><span class="lg" data-domain="joinhandshake.com"><b style="background:#1d1d1f">H</b></span><h3>Handshake</h3></div><div class="r">AI / LLM Trainer &amp; Developer Intern</div><p>Write and refine prompts, review model outputs and give structured feedback that improves model performance.</p></div>
-      <div><div class="org"><span class="lg" data-domain="ibm.com"><b style="background:#0f62fe">IBM</b></span><h3>IBM Z</h3></div><div class="r">Enterprise Systems Analyst</div><p>Mainframe architecture, high-volume transaction processing and zero-trust security for banking.</p></div>
+      <div><div class="org"><span class="lg"><b style="background:#0f62fe;font-size:11px">IBM</b></span><h3>IBM Z</h3></div><div class="r">Enterprise Systems Analyst</div><p>Mainframe architecture, high-volume transaction processing and zero-trust security for banking.</p></div>
       <div><div class="org"><span class="lg" data-domain="buffalo.edu"><b style="background:#005bbb">UB</b></span><h3>University at Buffalo</h3></div><div class="r">Selected coursework</div><p>An email triage assistant tested across three versions (MGS 430), a local AI stack benchmark on a laptop with no graphics card, a cloud vendor evaluation (MGS 402) and a job application agent.</p></div>
     </div>
   </div></section>
@@ -386,6 +386,7 @@ function draw(){
   calls(s);
   $('src').textContent = 'Daily closes from Yahoo Finance' + (fresh[cur] ? ', updated today' : ', as of ' + F.date(real.asOf)) + (street[cur] && street[cur].configured ? '. Analyst data from ' + street[cur].sources.join(' and ') : '') + '. Not investment advice.';
   if (HOSTED && !fresh[cur]) refresh(cur);
+  if (HOSTED && !draw.all){ draw.all = true; SYMS.forEach(function(x){ if (x !== cur) refresh(x); }); }
   if (HOSTED && !(cur in street)) loadStreet(cur);
 }
 function watch(){
@@ -406,7 +407,7 @@ function refresh(sym){
     r.timestamp.forEach(function(t, k){ if (qd.close[k] != null){ dates.push(new Date(new Date(t * 1000).toISOString().slice(0, 10) + 'T00:00:00Z')); close.push(qd.close[k]); } });
     if (close.length < 120) return;
     fresh[sym] = { sym: sym, name: real.series[sym].name, close: close, dates: dates, ppy: 252 };
-    if (sym === cur) draw();
+    if (sym === cur) draw(); else watch();
   }).catch(function(){});
 }
 function loadStreet(sym){

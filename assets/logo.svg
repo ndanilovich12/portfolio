@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nate Danilovich logo">
+  <rect width="64" height="64" rx="15" fill="#0a1e3f"/>
+  <path fill="#ffffff" d="M9 47V36c0-4 3-6.5 7-7 6-.8 8-15 18-16 7.5-.7 12 5 14 11.5 4.3 1 7.5 4.7 7.5 9.5v4.5c0 2.3-1.5 4-3.5 4.3L50 50l-3-7h-4v4h-6v-7H23v7h-6v-7c-1.5.5-2 2-2 4v3Z"/>
+  <path fill="#7fb6e8" d="M46.5 23.5c.4-4 3.3-7 7.5-7.5-1.7 2.2-2.3 4.8-1.8 7.9Z"/>
+  <circle cx="51" cy="33.5" r="1.6" fill="#0a1e3f"/>
+</svg>
